@@ -134,7 +134,6 @@ fun AddGameDialog(onDismiss: () -> Unit, onSave: (Game) -> Unit) {
         title = { Text("Neues Spiel hinzufügen") },
         text = {
             Column {
-                // 🎲 Spielinformationen
                 OutlinedTextField(
                     value = gameName,
                     onValueChange = { gameName = it },
@@ -158,7 +157,6 @@ fun AddGameDialog(onDismiss: () -> Unit, onSave: (Game) -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 🎲 **Spielvorschläge per Checkbox**
                 Text("Spielvorschläge", style = MaterialTheme.typography.titleMedium)
                 suggestedGames.forEach { suggestion ->
                     Row(

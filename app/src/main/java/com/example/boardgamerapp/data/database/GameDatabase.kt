@@ -6,10 +6,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.boardgamerapp.data.model.Game
+import com.example.boardgamerapp.data.model.GameRating
 import com.example.boardgamerapp.data.model.GameVote
 import com.example.boardgamerapp.utils.Converters
 
-@Database(entities = [Game::class, GameVote::class], version = 4, exportSchema = false)
+@Database(
+    entities = [Game::class, GameVote::class, GameRating::class],
+    version = 6,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
 abstract class GameDatabase : RoomDatabase() {
     abstract fun gameDao(): GameDao

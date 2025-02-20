@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.boardgamerapp.data.model.Game
+import com.example.boardgamerapp.data.model.GameRating
 import com.example.boardgamerapp.data.model.GameVote
 import kotlinx.coroutines.flow.Flow
 
@@ -39,6 +40,15 @@ interface GameDao {
 
     @Query("SELECT COUNT(*) FROM game_votes WHERE gameId = :gameId AND userId = :userId")
     suspend fun hasUserVoted(gameId: Int, userId: String): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateGameRating(rating: GameRating)
+
+    @Query("SELECT rating FROM game_ratings WHERE gameId = :gameId AND userId = :userId")
+    suspend fun getUserRatingForGame(gameId: Int, userId: String): Float?
+
+    @Query("SELECT AVG(rating) FROM game_ratings WHERE gameId = :gameId")
+    fun getAverageRatingForGame(gameId: Int): Flow<Float?>
 }
 
 data class VoteResult(

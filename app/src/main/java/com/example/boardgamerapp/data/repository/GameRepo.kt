@@ -4,6 +4,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import com.example.boardgamerapp.data.database.GameDao
 import com.example.boardgamerapp.data.model.Game
+import com.example.boardgamerapp.data.model.GameRating
 import com.example.boardgamerapp.data.model.GameVote
 import kotlinx.coroutines.flow.Flow
 import java.text.ParseException
@@ -58,5 +59,22 @@ class GameRepo(private val gameDao: GameDao) {
         }
     }
 
+    suspend fun submitUserRating(gameId: Int, userId: String, rating: Float) {
+        gameDao.insertOrUpdateGameRating(
+            GameRating(
+                gameId = gameId,
+                userId = userId,
+                rating = rating
+            )
+        )
+    }
+
+    suspend fun getUserRating(gameId: Int, userId: String): Float? {
+        return gameDao.getUserRatingForGame(gameId, userId)
+    }
+
+    fun getAverageRating(gameId: Int): Flow<Float?> {
+        return gameDao.getAverageRatingForGame(gameId)
+    }
 
 }
