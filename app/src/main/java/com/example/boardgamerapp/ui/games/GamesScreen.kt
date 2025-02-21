@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.boardgamerapp.data.model.Game
+import com.example.boardgamerapp.ui.events.getOrCreateUserId
 import com.example.boardgamerapp.ui.main.PageTitle
 import com.example.boardgamerapp.viewmodel.GameViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -194,6 +195,7 @@ fun AddGameDialog(onDismiss: () -> Unit, onSave: (Game) -> Unit) {
             }
         },
         confirmButton = {
+            val userId = LocalContext.current
             Button(
                 onClick = {
                     if (gameName.isNotBlank() && gameDate.isNotBlank() && gameTime.isNotBlank() && gameLocation.isNotBlank()) {
@@ -204,7 +206,8 @@ fun AddGameDialog(onDismiss: () -> Unit, onSave: (Game) -> Unit) {
                                 formatDateForDB(gameDate),
                                 gameTime,
                                 gameLocation,
-                                suggestedGames
+                                suggestedGames,
+                                getOrCreateUserId(userId)
                             )
                         )
                     }

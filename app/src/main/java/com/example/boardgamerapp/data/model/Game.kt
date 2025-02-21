@@ -11,4 +11,5 @@ data class Game(
     val time: String,
     val location: String,
     val suggestedGames: List<String> = emptyList(),
+    val hostId: String
 )

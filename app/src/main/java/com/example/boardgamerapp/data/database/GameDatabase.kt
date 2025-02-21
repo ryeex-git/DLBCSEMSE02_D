@@ -12,7 +12,7 @@ import com.example.boardgamerapp.utils.Converters
 
 @Database(
     entities = [Game::class, GameVote::class, GameRating::class],
-    version = 6,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

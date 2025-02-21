@@ -139,7 +139,10 @@ fun EventsScreen(
                 onDismiss = { showDialogVote = false },
                 onSubmitRating = { game, rating ->
                     gameViewModel.submitGameRating(game.id, getOrCreateUserId(context), rating)
-                })
+                },
+                gameViewModel,
+                getOrCreateUserId(context)
+            )
         }
     }
 }
@@ -167,12 +170,22 @@ fun RatePastEventDialog(
     pastGames: List<Game>,
     onDismiss: () -> Unit,
     onSubmitRating: (Game, Float) -> Unit,
+    gameViewModel: GameViewModel,
+    userId: String
 ) {
     var selectedGame by remember { mutableStateOf<Game?>(null) }
     var rating by remember { mutableStateOf(0f) }
     var expanded by remember { mutableStateOf(false) }
 
-    println(pastGames)
+    val existingRatingState = selectedGame?.let { game ->
+        gameViewModel.getUserRating(game.id, userId).collectAsState(initial = 0f)
+    }
+
+    LaunchedEffect(selectedGame) {
+        selectedGame?.let {
+            rating = existingRatingState?.value ?: 0f
+        }
+    }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
