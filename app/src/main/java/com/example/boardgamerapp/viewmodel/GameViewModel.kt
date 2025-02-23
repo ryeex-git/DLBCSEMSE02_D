@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.boardgamerapp.data.database.GameDatabase
 import com.example.boardgamerapp.data.model.Game
 import com.example.boardgamerapp.data.model.GameVote
+import com.example.boardgamerapp.data.model.Message
+import com.example.boardgamerapp.data.model.User
 import com.example.boardgamerapp.data.repository.GameRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +19,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val nextGame: Flow<Game?>
     val allUpcomingGames: Flow<List<Game>?>
     val allPastGames: Flow<List<Game>?>
+    val getAllUsers: Flow<List<User>?>
 
     init {
         val gameDao = GameDatabase.getDatabase(application).gameDao()
@@ -24,6 +27,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         nextGame = repository.nextGame
         allUpcomingGames = repository.upcomingGames
         allPastGames = repository.pastGames
+        getAllUsers = repository.getAllUsers
     }
 
     fun addGame(game: Game) {
@@ -43,6 +47,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getGameVotes(gameId: Int): Flow<List<GameVote>?> {
         return repository.getGameVotes(gameId)
+    }
+
+    suspend fun getUserById(userId: String): User? {
+        return repository.getUserById(userId)
     }
 
     fun updateGameSuggestions(gameId: Int, newSuggestions: List<String>) {
@@ -73,5 +81,33 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getAverageGameRating(gameId: Int): Flow<Float?> {
         return repository.getAverageRating(gameId)
+    }
+
+    fun updateFavoriteCuisine(userId: String, cuisine: String) {
+        viewModelScope.launch {
+            repository.setFavoriteCuisine(userId, cuisine)
+        }
+    }
+
+    val currentUserFlow = MutableStateFlow<User?>(null)
+
+    fun loadUser(userId: String): User {
+        var user = User("", "", "")
+        viewModelScope.launch {
+            user = repository.insertOrUpdateUser(userId)!!
+            currentUserFlow.value = user
+        }
+        return user
+    }
+
+    fun sendMessage(senderId: String, receiverId: String, text: String) {
+        viewModelScope.launch {
+            val message = Message(senderId = senderId, receiverId = receiverId, messageText = text)
+            repository.insertMessage(message)
+        }
+    }
+
+    fun getMessagesForUser(userId: String): Flow<List<Message>> {
+        return repository.getMessagesForUser(userId)
     }
 }

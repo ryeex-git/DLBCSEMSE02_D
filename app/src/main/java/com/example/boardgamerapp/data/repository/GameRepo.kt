@@ -6,6 +6,8 @@ import com.example.boardgamerapp.data.database.GameDao
 import com.example.boardgamerapp.data.model.Game
 import com.example.boardgamerapp.data.model.GameRating
 import com.example.boardgamerapp.data.model.GameVote
+import com.example.boardgamerapp.data.model.Message
+import com.example.boardgamerapp.data.model.User
 import kotlinx.coroutines.flow.Flow
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -18,6 +20,7 @@ class GameRepo(private val gameDao: GameDao) {
     val nextGame: Flow<Game?> = gameDao.getNextGame(formatDateForDB(currentDate))
     val upcomingGames: Flow<List<Game>?> = gameDao.getUpcomingGames(formatDateForDB(currentDate))
     val pastGames: Flow<List<Game>?> = gameDao.getPastGames(formatDateForDB(currentDate))
+    val getAllUsers: Flow<List<User>?> = gameDao.getAllUsers()
 
     suspend fun insertGame(game: Game) {
         gameDao.insertGame(game)
@@ -53,9 +56,9 @@ class GameRepo(private val gameDao: GameDao) {
             val inputFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
             val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val date = inputFormat.parse(inputDate)
-            outputFormat.format(date!!) // Konvertiert zu `yyyy-MM-dd`
+            outputFormat.format(date!!)
         } catch (e: ParseException) {
-            inputDate // Falls die Eingabe falsch ist, bleibt sie unverändert
+            inputDate
         }
     }
 
@@ -77,4 +80,58 @@ class GameRepo(private val gameDao: GameDao) {
         return gameDao.getAverageRatingForGame(gameId)
     }
 
+    suspend fun setFavoriteCuisine(userId: String, cuisine: String) {
+        val existingUser = gameDao.getUserById(userId)
+        val updatedUser = existingUser?.copy(favoriteCuisine = cuisine)
+            ?: User(userId = userId, userName = "Unbekannt", favoriteCuisine = cuisine)
+        gameDao.insertOrUpdateUser(updatedUser)
+    }
+
+    suspend fun getUserById(userId: String): User? {
+        return gameDao.getUserById(userId)
+    }
+
+    suspend fun insertOrUpdateUser(userId: String): User? {
+        val userNames = listOf(
+            "Lena",
+            "Max",
+            "Sophia",
+            "Jonas",
+            "Emma",
+            "Luca",
+            "Hannah",
+            "Finn",
+            "Mia",
+            "Noah",
+            "Lea",
+            "Ben",
+            "Clara",
+            "Elias",
+            "Anna",
+            "Paul",
+            "Laura",
+            "David",
+            "Nina",
+            "Tom"
+        )
+
+        gameDao.getUserById(userId)
+            ?: gameDao.insertOrUpdateUser(
+                User(
+                    userId = userId,
+                    userName = userNames.random(),
+                    favoriteCuisine = ""
+                )
+            )
+
+        return gameDao.getUserById(userId)
+    }
+
+    suspend fun insertMessage(message: Message) {
+        gameDao.insertMessage(message)
+    }
+
+    fun getMessagesForUser(userId: String): Flow<List<Message>> {
+        return gameDao.getMessagesForUser(userId)
+    }
 }

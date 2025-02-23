@@ -44,6 +44,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.boardgamerapp.R
 import com.example.boardgamerapp.data.model.Game
+import com.example.boardgamerapp.ui.games.CuisineSelectionDialog
 import com.example.boardgamerapp.ui.games.GameVoteDialog
 import com.example.boardgamerapp.ui.main.PageTitle
 import com.example.boardgamerapp.viewmodel.GameViewModel
@@ -60,6 +61,9 @@ fun EventsScreen(
     var nextGame by remember { mutableStateOf<Game?>(null) }
     var showDialog by remember { mutableStateOf(false) }
     var showDialogVote by remember { mutableStateOf(false) }
+    var showCuisineDialog by remember { mutableStateOf(false) }
+
+    val user by gameViewModel.currentUserFlow.collectAsState(initial = null)
 
     LaunchedEffect(Unit) {
         gameViewModel.nextGame.collectLatest { game ->
@@ -87,7 +91,7 @@ fun EventsScreen(
             val context = LocalContext.current
             val gameVotes by gameViewModel.getGameVotes(game.id)
                 .collectAsState(initial = emptyList())
-            val userId = getOrCreateUserId(context)
+            val userId = getOrCreateUserId(context, gameViewModel)
 
             if (!gameVotes?.any { it.userId == userId }!!) {
                 Button(onClick = { showDialog = true }) {
@@ -102,10 +106,29 @@ fun EventsScreen(
                 )
             }
 
+            Button(onClick = { showCuisineDialog = true }) {
+                Text("Meine Lieblingsküche")
+            }
+
+            if (showCuisineDialog) {
+                CuisineSelectionDialog(
+                    currentCuisine = user?.favoriteCuisine ?: "",
+                    onDismiss = { showCuisineDialog = false },
+                    onSave = { newCuisine ->
+                        gameViewModel.updateFavoriteCuisine(
+                            user?.userId ?: getOrCreateUserId(
+                                context, gameViewModel
+                            ), newCuisine
+                        )
+                        showCuisineDialog = false
+                    }
+                )
+            }
+
 
             if (showDialog && nextGame != null) {
                 GameVoteDialog(
-                    getOrCreateUserId(context),
+                    getOrCreateUserId(context, gameViewModel),
                     gameViewModel,
                     game,
                     onDismiss = { showDialog = false })
@@ -138,22 +161,31 @@ fun EventsScreen(
                 pastGames,
                 onDismiss = { showDialogVote = false },
                 onSubmitRating = { game, rating ->
-                    gameViewModel.submitGameRating(game.id, getOrCreateUserId(context), rating)
+                    gameViewModel.submitGameRating(
+                        game.id,
+                        getOrCreateUserId(context, gameViewModel),
+                        rating
+                    )
                 },
                 gameViewModel,
-                getOrCreateUserId(context)
+                getOrCreateUserId(context, gameViewModel)
             )
         }
     }
 }
 
-fun getOrCreateUserId(context: Context): String {
+fun getOrCreateUserId(context: Context, gameViewModel: GameViewModel): String {
     val sharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     var userId = sharedPreferences.getString("user_id", null)
+    if (userId != null) {
+        gameViewModel.loadUser(userId)
+    }
 
     if (userId == null) {
         userId = UUID.randomUUID().toString()
         sharedPreferences.edit().putString("user_id", userId).apply()
+
+        userId = gameViewModel.loadUser(userId).userId
     }
 
     return userId
@@ -175,15 +207,21 @@ fun RatePastEventDialog(
 ) {
     var selectedGame by remember { mutableStateOf<Game?>(null) }
     var rating by remember { mutableStateOf(0f) }
+    var avarageRating by remember { mutableStateOf(0f) }
     var expanded by remember { mutableStateOf(false) }
 
     val existingRatingState = selectedGame?.let { game ->
         gameViewModel.getUserRating(game.id, userId).collectAsState(initial = 0f)
     }
 
+    val avarageRatingState = selectedGame?.let { game ->
+        gameViewModel.getAverageGameRating(game.id).collectAsState(initial = 0f)
+    }
+
     LaunchedEffect(selectedGame) {
         selectedGame?.let {
             rating = existingRatingState?.value ?: 0f
+            avarageRating = avarageRatingState?.value ?: 0f
         }
     }
 
@@ -271,6 +309,11 @@ fun RatePastEventDialog(
                 }
                 Text(
                     text = "Bewertung: ${rating.toInt()} / 10",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = "Durchschnittliche Bewertung: ${avarageRating.toInt()} / 10",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )

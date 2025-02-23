@@ -7,6 +7,8 @@ import androidx.room.Query
 import com.example.boardgamerapp.data.model.Game
 import com.example.boardgamerapp.data.model.GameRating
 import com.example.boardgamerapp.data.model.GameVote
+import com.example.boardgamerapp.data.model.Message
+import com.example.boardgamerapp.data.model.User
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -49,6 +51,31 @@ interface GameDao {
 
     @Query("SELECT AVG(rating) FROM game_ratings WHERE gameId = :gameId")
     fun getAverageRatingForGame(gameId: Int): Flow<Float?>
+
+    @Query("SELECT * FROM users WHERE userId = :userId")
+    suspend fun getUserById(userId: String): User?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateUser(user: User)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMultiple(users: List<User>)
+
+    @Query("SELECT hostId FROM games ORDER BY date DESC, time DESC LIMIT 1")
+    suspend fun getLastHostUserId(): String?
+
+    @Query("SELECT userId FROM users WHERE userId NOT IN (SELECT hostId FROM games) ORDER BY RANDOM() LIMIT 1")
+    suspend fun getNextHostUserId(): String?
+
+    @Query("SELECT * FROM messages WHERE senderId = :userId OR receiverId = :userId ORDER BY timestamp DESC")
+    fun getMessagesForUser(userId: String): Flow<List<Message>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMessage(message: Message)
+
+    @Query("SELECT * FROM users")
+    fun getAllUsers(): Flow<List<User>>
+
 }
 
 data class VoteResult(

@@ -50,7 +50,6 @@ fun GamesScreen(
         )
     )
 ) {
-
     var gameList by remember { mutableStateOf<List<Game>?>(emptyList()) }
 
     LaunchedEffect(Unit) {
@@ -112,6 +111,7 @@ fun AddGameButton(gameViewModel: GameViewModel) {
 
     if (showDialog) {
         AddGameDialog(
+            gameViewModel,
             onDismiss = { showDialog = false },
             onSave = { game ->
                 gameViewModel.addGame(game)
@@ -122,7 +122,7 @@ fun AddGameButton(gameViewModel: GameViewModel) {
 }
 
 @Composable
-fun AddGameDialog(onDismiss: () -> Unit, onSave: (Game) -> Unit) {
+fun AddGameDialog(gameViewModel: GameViewModel, onDismiss: () -> Unit, onSave: (Game) -> Unit) {
     var gameName by remember { mutableStateOf("") }
     var gameDate by remember { mutableStateOf("") }
     var gameTime by remember { mutableStateOf("") }
@@ -207,7 +207,7 @@ fun AddGameDialog(onDismiss: () -> Unit, onSave: (Game) -> Unit) {
                                 gameTime,
                                 gameLocation,
                                 suggestedGames,
-                                getOrCreateUserId(userId)
+                                getOrCreateUserId(userId, gameViewModel)
                             )
                         )
                     }

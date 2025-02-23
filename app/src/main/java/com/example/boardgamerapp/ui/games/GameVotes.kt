@@ -28,7 +28,7 @@ import com.example.boardgamerapp.viewmodel.GameViewModel
 fun GameVoteDialog(
     userId: String,
     gameViewModel: GameViewModel,
-    nextGame: Game, // Direkt das nächste Spiel übergeben
+    nextGame: Game,
     onDismiss: () -> Unit
 ) {
     val checkedStateMap = remember { mutableStateMapOf<String, Boolean>() }
@@ -92,7 +92,6 @@ fun GameVoteDialog(
 @Composable
 fun GameSuggestionsScreen(game: Game, gameViewModel: GameViewModel) {
     var newSuggestion by remember { mutableStateOf("") }
-    //        Neues Spiel vorschlagen
     OutlinedTextField(
         value = newSuggestion,
         onValueChange = { newSuggestion = it },
