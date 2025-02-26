@@ -75,7 +75,7 @@ interface GameDao {
 
     @Query("SELECT * FROM users")
     fun getAllUsers(): Flow<List<User>>
-
+    
 }
 
 data class VoteResult(

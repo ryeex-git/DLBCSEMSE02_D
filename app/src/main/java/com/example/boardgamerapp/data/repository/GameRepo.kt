@@ -34,6 +34,13 @@ class GameRepo(private val gameDao: GameDao) {
         gameDao.voteForGame(gameVote)
     }
 
+    suspend fun getNextHost(): User? {
+        val userId = gameDao.getNextHostUserId()
+        if (userId !== null)
+            return gameDao.getUserById(userId)
+        return null
+    }
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun voteForGame(vote: GameVote) {
         gameDao.voteForGame(vote)

@@ -44,6 +44,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.boardgamerapp.R
 import com.example.boardgamerapp.data.model.Game
+import com.example.boardgamerapp.data.model.User
 import com.example.boardgamerapp.ui.games.CuisineSelectionDialog
 import com.example.boardgamerapp.ui.games.GameVoteDialog
 import com.example.boardgamerapp.ui.main.PageTitle
@@ -62,14 +63,17 @@ fun EventsScreen(
     var showDialog by remember { mutableStateOf(false) }
     var showDialogVote by remember { mutableStateOf(false) }
     var showCuisineDialog by remember { mutableStateOf(false) }
-
+    var nextHost by remember { mutableStateOf(User("", "", "")) }
     val user by gameViewModel.currentUserFlow.collectAsState(initial = null)
 
     LaunchedEffect(Unit) {
         gameViewModel.nextGame.collectLatest { game ->
             nextGame = game
             println("Geladenes Spiel: $game")
+            nextHost = gameViewModel.getNextHost()
+            println("Gelandener nächster Host: $nextHost")
         }
+
     }
 
     Column(
@@ -84,6 +88,7 @@ fun EventsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Text("Folgender Spieler muss demnächst planen: ${nextHost.userName}")
 
         nextGame?.let { game ->
             GameCard(game)

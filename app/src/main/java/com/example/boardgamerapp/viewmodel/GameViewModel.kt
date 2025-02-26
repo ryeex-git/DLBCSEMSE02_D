@@ -110,4 +110,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun getMessagesForUser(userId: String): Flow<List<Message>> {
         return repository.getMessagesForUser(userId)
     }
+
+    suspend fun getNextHost(): User {
+        return repository.getNextHost() ?: User("", "", "")
+    }
+
 }
